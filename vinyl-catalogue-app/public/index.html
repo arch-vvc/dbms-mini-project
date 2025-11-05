@@ -167,7 +167,6 @@
     </div>
 
     <div class="container">
-        <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
             <h2>Store Overview</h2>
             <div class="stats-grid">
@@ -192,7 +191,6 @@
             <div id="recentTransactions"></div>
         </div>
 
-        <!-- Records Tab -->
         <div id="records" class="tab-content">
             <h2>Manage Records</h2>
             <div style="margin-bottom: 20px;">
@@ -250,7 +248,6 @@
             <div id="recordsList"></div>
         </div>
 
-        <!-- Artists Tab -->
         <div id="artists" class="tab-content">
             <h2>Manage Artists</h2>
             <div style="margin-bottom: 20px;">
@@ -285,7 +282,6 @@
             <div id="artistsList"></div>
         </div>
 
-        <!-- Customers Tab -->
         <div id="customers" class="tab-content">
             <h2>Manage Customers</h2>
             <div style="margin-bottom: 20px;">
@@ -348,12 +344,6 @@
             <div id="customersList"></div>
         </div>
 
-        <!-- Other tabs will be similar... -->
-        <div id="transactions" class="tab-content">
-            <h2>Transactions</h2>
-            <p>Transaction management coming soon...</p>
-        </div>
-
         <div id="reservations" class="tab-content">
             <h2>Reservations</h2>
             <p>Reservation management coming soon...</p>
@@ -364,89 +354,83 @@
             <p>Label management coming soon...</p>
         </div>
 
+        <div id="transactions" class="tab-content">
+            <h2>Sell Records</h2>
+            <form id="transactionForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Customer:</label>
+                        <select id="transCustomer" required>
+                            <option value="">Select Customer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Record:</label>
+                        <select id="transRecord" required>
+                            <option value="">Select Record</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Staff Processing:</label>
+                        <select id="transStaff" required>
+                            <option value="">Select Staff Member</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity:</label>
+                        <input type="number" id="transQuantity" min="1" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit Price ($):</label>
+                        <input type="number" id="transPrice" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Transaction Type:</label>
+                        <select id="transType" required>
+                            <option value="Sale">Sale</option>
+                            <option value="Return">Return</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">Process Transaction</button>
+            </form>
+            
+            <h3 style="margin-top: 30px;">Recent Transactions</h3>
+            <div id="transactionsList"></div>
+        </div>
+
         <div id="staff" class="tab-content">
             <h2>Staff Management</h2>
-            <p>Staff management coming soon...</p>
+            <form id="staffForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" id="staffName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role:</label>
+                        <select id="staffRole" required>
+                            <option value="">Select Role</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Sales Associate">Sales Associate</option>
+                            <option value="Cashier">Cashier</option>
+                            <option value="Inventory Manager">Inventory Manager</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Salary:</label>
+                        <input type="number" id="staffSalary" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number:</label>
+                        <input type="tel" id="staffContact">
+                    </div>
+                </div>
+                <button type="submit">Add Staff Member</button>
+            </form>
+            <div id="staffList"></div>
         </div>
-    </div>
 
-    <!-- Transactions Tab -->
-    <div id="transactions" class="tab-content">
-        <h2>Sell Records</h2>
-        <form id="transactionForm">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Customer:</label>
-                    <select id="transCustomer" required>
-                        <option value="">Select Customer</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Record:</label>
-                    <select id="transRecord" required>
-                        <option value="">Select Record</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Staff Processing:</label>
-                    <select id="transStaff" required>
-                        <option value="">Select Staff Member</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Quantity:</label>
-                    <input type="number" id="transQuantity" min="1" value="1" required>
-                </div>
-                <div class="form-group">
-                    <label>Unit Price ($):</label>
-                    <input type="number" id="transPrice" step="0.01" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label>Transaction Type:</label>
-                    <select id="transType" required>
-                        <option value="Sale">Sale</option>
-                        <option value="Return">Return</option>
-                    </select>
-                </div>
-            </div>
-            <button type="submit">Process Transaction</button>
-        </form>
-        
-        <h3 style="margin-top: 30px;">Recent Transactions</h3>
-        <div id="transactionsList"></div>
-    </div>
-
-    <!-- Staff Tab -->
-    <div id="staff" class="tab-content">
-        <h2>Staff Management</h2>
-        <form id="staffForm">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Name:</label>
-                    <input type="text" id="staffName" required>
-                </div>
-                <div class="form-group">
-                    <label>Role:</label>
-                    <select id="staffRole" required>
-                        <option value="">Select Role</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Sales Associate">Sales Associate</option>
-                        <option value="Cashier">Cashier</option>
-                        <option value="Inventory Manager">Inventory Manager</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Salary:</label>
-                    <input type="number" id="staffSalary" step="0.01" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label>Contact Number:</label>
-                    <input type="tel" id="staffContact">
-                </div>
-            </div>
-            <button type="submit">Add Staff Member</button>
-        </form>
-        <div id="staffList"></div>
     </div>
 
     <script src="js/config.js"></script>

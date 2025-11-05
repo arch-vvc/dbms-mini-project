@@ -1,3 +1,4 @@
+// Load all records
 async function loadRecords() {
     try {
         // Load artists for the dropdown
@@ -7,54 +8,84 @@ async function loadRecords() {
         const response = await fetch(`${API_URL}/records-with-artists`);
         const records = await response.json();
         
-        const recordsList = document.getElementById('recordsList');
-        
-        if (records.length === 0) {
-            recordsList.innerHTML = '<p>No records found. Add your first vinyl record!</p>';
-            return;
-        }
-        
-        let html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Artist(s)</th>
-                        <th>Genre</th>
-                        <th>Edition</th>
-                        <th>Catalog #</th>
-                        <th>Total</th>
-                        <th>Available</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        
-        records.forEach(record => {
-            html += `
-                <tr>
-                    <td>${record.Record_ID}</td>
-                    <td>${record.Title}</td>
-                    <td>${record.Artists || 'No artist assigned'}</td>
-                    <td>${record.Genre || '-'}</td>
-                    <td>${record.Edition || '-'}</td>
-                    <td>${record.Catalog_Number || '-'}</td>
-                    <td>${record.Total_Copies}</td>
-                    <td>${record.Available_Copies}</td>
-                    <td>
-                        <button class="btn-delete" onclick="deleteRecord(${record.Record_ID}, '${record.Title.replace(/'/g, "\\'")}')">Delete</button>
-                    </td>
-                </tr>
-            `;
-        });
-        
-        html += '</tbody></table>';
-        recordsList.innerHTML = html;
+        displayRecords(records);
     } catch (error) {
         console.error('Error loading records:', error);
         document.getElementById('recordsList').innerHTML = '<p>Error loading records</p>';
+    }
+}
+
+// Display records in a table
+function displayRecords(records) {
+    const recordsList = document.getElementById('recordsList');
+    
+    if (records.length === 0) {
+        recordsList.innerHTML = '<p>No records found matching your search.</p>';
+        return;
+    }
+    
+    let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Artist(s)</th>
+                    <th>Genre</th>
+                    <th>Edition</th>
+                    <th>Catalog #</th>
+                    <th>Total</th>
+                    <th>Available</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    records.forEach(record => {
+        html += `
+            <tr>
+                <td>${record.Record_ID}</td>
+                <td>${record.Title}</td>
+                <td>${record.Artists || 'No artist assigned'}</td>
+                <td>${record.Genre || '-'}</td>
+                <td>${record.Edition || '-'}</td>
+                <td>${record.Catalog_Number || '-'}</td>
+                <td>${record.Total_Copies}</td>
+                <td>${record.Available_Copies}</td>
+                <td>
+                    <button class="btn-delete" onclick="deleteRecord(${record.Record_ID}, '${record.Title.replace(/'/g, "\\'")}')">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table>';
+    recordsList.innerHTML = html;
+}
+
+// Search records function - matches your HTML (only has searchRecord input, no genre filter)
+async function searchRecords() {
+    const searchTerm = document.getElementById('searchRecord').value.toLowerCase();
+    
+    try {
+        const response = await fetch(`${API_URL}/records-with-artists`);
+        const records = await response.json();
+        
+        let filtered = records;
+        
+        if (searchTerm) {
+            filtered = filtered.filter(record => {
+                return record.Title.toLowerCase().includes(searchTerm) ||
+                       (record.Genre && record.Genre.toLowerCase().includes(searchTerm)) ||
+                       (record.Artists && record.Artists.toLowerCase().includes(searchTerm)) ||
+                       (record.Catalog_Number && record.Catalog_Number.toLowerCase().includes(searchTerm));
+            });
+        }
+        
+        displayRecords(filtered);
+    } catch (error) {
+        console.error('Error searching records:', error);
     }
 }
 
@@ -100,7 +131,7 @@ async function deleteRecord(id, title) {
     }
 }
 
-// Replace the existing record form handler with this updated version
+// Record form handler
 document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
