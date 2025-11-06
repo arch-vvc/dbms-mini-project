@@ -346,12 +346,38 @@
 
         <div id="reservations" class="tab-content">
             <h2>Reservations</h2>
-            <p>Reservation management coming soon...</p>
+                <form id="reservationForm" onsubmit="event.preventDefault(); addReservation();">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Customer:</label>
+                            <select id="resCustomer" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Record:</label>
+                            <select id="resRecord" required></select>
+                        </div>
+                    </div>
+                    <button type="submit">Add Reservation</button>
+                </form>
+                <div id="reservationsList"></div>
         </div>
 
         <div id="labels" class="tab-content">
             <h2>Record Labels</h2>
-            <p>Label management coming soon...</p>
+                <form id="labelForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Label Name:</label>
+                            <input type="text" id="labelName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Address:</label>
+                            <input type="text" id="labelAddress">
+                        </div>
+                    </div>
+                    <button type="submit">Add Label</button>
+                </form>
+                <div id="labelsList"></div>
         </div>
 
         <div id="transactions" class="tab-content">
@@ -433,13 +459,15 @@
 
     </div>
 
-    <script src="js/config.js"></script>
+   <script src="js/config.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/artists.js"></script>
     <script src="js/records.js"></script>
     <script src="js/customers.js"></script>
     <script src="js/staff.js"></script>
     <script src="js/transactions.js"></script>
+    <script src="js/reservations.js"></script>
+    <script src="js/labels.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

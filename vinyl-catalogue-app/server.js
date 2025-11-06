@@ -26,7 +26,7 @@ db.connect((err) => {
         console.error('Database connection failed:', err);
         return;
     }
-    console.log('Connected to MySQL database');
+    console.log('✅ Connected to MySQL database');
 });
 
 // Test route
@@ -34,260 +34,53 @@ app.get('/api/test', (req, res) => {
     res.json({ message: 'Server is running!' });
 });
 
+
 // =====================
 // RECORDS ENDPOINTS
 // =====================
-// Get all records
 app.get('/api/records', (req, res) => {
     const query = 'SELECT * FROM RECORD ORDER BY Record_ID DESC';
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching records:', err);
-            res.status(500).json({ error: 'Failed to fetch records' });
-            return;
+            return res.status(500).json({ error: 'Failed to fetch records' });
         }
         res.json(results);
     });
 });
 
-// Add new record
 app.post('/api/records', (req, res) => {
     const { title, genre, edition, catalog_number, total_copies, available_copies } = req.body;
     const query = 'INSERT INTO RECORD (Title, Genre, Edition, Catalog_Number, Total_Copies, Available_Copies) VALUES (?, ?, ?, ?, ?, ?)';
-    
     db.query(query, [title, genre, edition, catalog_number, total_copies, available_copies], (err, result) => {
         if (err) {
             console.error('Error adding record:', err);
-            res.status(500).json({ error: 'Failed to add record' });
-            return;
+            return res.status(500).json({ error: 'Failed to add record' });
         }
         res.json({ id: result.insertId, message: 'Record added successfully' });
     });
 });
 
-// =====================
-// ARTISTS ENDPOINTS
-// =====================
-// Get all artists
-app.get('/api/artists', (req, res) => {
-    const query = 'SELECT * FROM ARTIST ORDER BY Artist_ID DESC';
-    
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error fetching artists:', err);
-            res.status(500).json({ error: 'Failed to fetch artists' });
-            return;
-        }
-        res.json(results);
-    });
-});
-
-// Add new artist
-app.post('/api/artists', (req, res) => {
-    const { name, nationality, type } = req.body;
-    const query = 'INSERT INTO ARTIST (Name, Nationality, Type) VALUES (?, ?, ?)';
-    
-    db.query(query, [name, nationality, type], (err, result) => {
-        if (err) {
-            console.error('Error adding artist:', err);
-            res.status(500).json({ error: 'Failed to add artist' });
-            return;
-        }
-        res.json({ id: result.insertId, message: 'Artist added successfully' });
-    });
-});
-
-// Delete artist
-app.delete('/api/artists/:id', (req, res) => {
-    const artistId = req.params.id;
-    
-    // First check if artist has any records
-    db.query('SELECT COUNT(*) as count FROM PRODUCED_BY WHERE Artist_ID = ?', [artistId], (err, results) => {
-        if (err) {
-            console.error('Error checking artist records:', err);
-            res.status(500).json({ error: 'Failed to check artist records' });
-            return;
-        }
-        
-        if (results[0].count > 0) {
-            res.status(400).json({ error: 'Cannot delete artist with existing records. Remove records first.' });
-            return;
-        }
-        
-        // If no records, proceed with deletion
-        db.query('DELETE FROM ARTIST WHERE Artist_ID = ?', [artistId], (err, result) => {
-            if (err) {
-                console.error('Error deleting artist:', err);
-                res.status(500).json({ error: 'Failed to delete artist' });
-                return;
-            }
-            
-            if (result.affectedRows === 0) {
-                res.status(404).json({ error: 'Artist not found' });
-                return;
-            }
-            
-            res.json({ message: 'Artist deleted successfully' });
-        });
-    });
-});
-
-// =====================
-// CUSTOMERS ENDPOINTS
-// =====================
-// Get all customers
-app.get('/api/customers', (req, res) => {
-    const query = 'SELECT * FROM CUSTOMER ORDER BY Customer_ID DESC';
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error fetching customers:', err);
-            res.status(500).json({ error: 'Failed to fetch customers' });
-            return;
-        }
-        res.json(results);
-    });
-});
-
-// Add new customer
-app.post('/api/customers', (req, res) => {
-    const { first_name, second_name, last_name, email, membership_type, street, city, pincode, phone } = req.body;
-    
-    // Start transaction to add customer and phone
-    db.beginTransaction((err) => {
-        if (err) {
-            res.status(500).json({ error: 'Transaction failed' });
-            return;
-        }
-        
-        // Insert customer
-        const customerQuery = 'INSERT INTO CUSTOMER (First_Name, Second_Name, Last_Name, Email, Membership_Type, Date_Of_Join, Street, City, Pincode) VALUES (?, ?, ?, ?, ?, CURDATE(), ?, ?, ?)';
-        
-        db.query(customerQuery, [first_name, second_name, last_name, email, membership_type, street, city, pincode], (err, result) => {
-            if (err) {
-                db.rollback();
-                console.error('Error adding customer:', err);
-                res.status(500).json({ error: 'Failed to add customer' });
-                return;
-            }
-            
-            const customerId = result.insertId;
-            
-            // If phone provided, add to CUSTOMER_PHONE table
-            if (phone) {
-                const phoneQuery = 'INSERT INTO CUSTOMER_PHONE (Customer_ID, Phone_No) VALUES (?, ?)';
-                db.query(phoneQuery, [customerId, phone], (err) => {
-                    if (err) {
-                        db.rollback();
-                        console.error('Error adding phone:', err);
-                        res.status(500).json({ error: 'Failed to add phone' });
-                        return;
-                    }
-                    
-                    db.commit((err) => {
-                        if (err) {
-                            db.rollback();
-                            res.status(500).json({ error: 'Failed to commit transaction' });
-                            return;
-                        }
-                        res.json({ id: customerId, message: 'Customer added successfully' });
-                    });
-                });
-            } else {
-                db.commit((err) => {
-                    if (err) {
-                        db.rollback();
-                        res.status(500).json({ error: 'Failed to commit transaction' });
-                        return;
-                    }
-                    res.json({ id: customerId, message: 'Customer added successfully' });
-                });
-            }
-        });
-    });
-});
-
-// =====================
-// DASHBOARD STATS
-// =====================
-app.get('/api/stats', (req, res) => {
-    const stats = {};
-    
-    // Get total records
-    db.query('SELECT COUNT(*) as count FROM RECORD', (err, results) => {
-        if (err) {
-            console.error('Error:', err);
-            res.status(500).json({ error: 'Failed to fetch stats' });
-            return;
-        }
-        stats.totalRecords = results[0].count;
-        
-        // Get total customers
-        db.query('SELECT COUNT(*) as count FROM CUSTOMER', (err, results) => {
-            if (err) {
-                console.error('Error:', err);
-                res.status(500).json({ error: 'Failed to fetch stats' });
-                return;
-            }
-            stats.totalCustomers = results[0].count;
-            
-            // Get active reservations
-            db.query('SELECT COUNT(*) as count FROM RESERVATION WHERE Status = "Active" OR Status IS NULL', (err, results) => {
-                if (err) {
-                    console.error('Error:', err);
-                    res.status(500).json({ error: 'Failed to fetch stats' });
-                    return;
-                }
-                stats.activeReservations = results[0].count;
-                
-                // Get today's sales
-                db.query('SELECT SUM(Total_Amount) as total FROM TRANSACTION WHERE DATE(Transaction_Date) = CURDATE()', (err, results) => {
-                    if (err) {
-                        console.error('Error:', err);
-                        res.status(500).json({ error: 'Failed to fetch stats' });
-                        return;
-                    }
-                    stats.todaySales = results[0].total || 0;
-                    
-                    res.json(stats);
-                });
-            });
-        });
-    });
-});
-
-// Delete record
 app.delete('/api/records/:id', (req, res) => {
     const recordId = req.params.id;
-    
     db.beginTransaction((err) => {
-        if (err) {
-            res.status(500).json({ error: 'Transaction failed' });
-            return;
-        }
-        
-        // Delete from relationship tables first
+        if (err) return res.status(500).json({ error: 'Transaction failed' });
+
         db.query('DELETE FROM PRODUCED_BY WHERE Record_ID = ?', [recordId], (err) => {
             if (err) {
                 db.rollback();
-                console.error('Error deleting record relationships:', err);
-                res.status(500).json({ error: 'Failed to delete record relationships' });
-                return;
+                return res.status(500).json({ error: 'Failed to delete relationships' });
             }
-            
-            // Now delete the record
-            db.query('DELETE FROM RECORD WHERE Record_ID = ?', [recordId], (err, result) => {
+
+            db.query('DELETE FROM RECORD WHERE Record_ID = ?', [recordId], (err) => {
                 if (err) {
                     db.rollback();
-                    console.error('Error deleting record:', err);
-                    res.status(500).json({ error: 'Failed to delete record' });
-                    return;
+                    return res.status(500).json({ error: 'Failed to delete record' });
                 }
-                
                 db.commit((err) => {
                     if (err) {
                         db.rollback();
-                        res.status(500).json({ error: 'Failed to commit transaction' });
-                        return;
+                        return res.status(500).json({ error: 'Commit failed' });
                     }
                     res.json({ message: 'Record deleted successfully' });
                 });
@@ -296,133 +89,196 @@ app.delete('/api/records/:id', (req, res) => {
     });
 });
 
-// Link record to artist
-app.post('/api/records/:recordId/artists/:artistId', (req, res) => {
-    const { recordId, artistId } = req.params;
-    
-    const query = 'INSERT INTO PRODUCED_BY (Record_ID, Artist_ID) VALUES (?, ?)';
-    
-    db.query(query, [recordId, artistId], (err, result) => {
-        if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                res.status(400).json({ error: 'This artist is already linked to this record' });
-            } else {
-                console.error('Error linking artist to record:', err);
-                res.status(500).json({ error: 'Failed to link artist to record' });
-            }
-            return;
-        }
-        res.json({ message: 'Artist linked to record successfully' });
-    });
-});
 
-// Get records with their artists
-app.get('/api/records-with-artists', (req, res) => {
-    const query = `
-        SELECT 
-            r.*,
-            GROUP_CONCAT(a.Name SEPARATOR ', ') as Artists
-        FROM RECORD r
-        LEFT JOIN PRODUCED_BY pb ON r.Record_ID = pb.Record_ID
-        LEFT JOIN ARTIST a ON pb.Artist_ID = a.Artist_ID
-        GROUP BY r.Record_ID
-        ORDER BY r.Record_ID DESC
-    `;
-    
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error fetching records with artists:', err);
-            res.status(500).json({ error: 'Failed to fetch records' });
-            return;
-        }
+// =====================
+// ARTISTS ENDPOINTS
+// =====================
+app.get('/api/artists', (req, res) => {
+    db.query('SELECT * FROM ARTIST ORDER BY Artist_ID DESC', (err, results) => {
+        if (err) return res.status(500).json({ error: 'Failed to fetch artists' });
         res.json(results);
     });
 });
 
-// =====================
-// STAFF ENDPOINTS
-// =====================
-// Get all staff
-app.get('/api/staff', (req, res) => {
-    const query = 'SELECT * FROM STAFF ORDER BY Staff_ID DESC';
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error fetching staff:', err);
-            res.status(500).json({ error: 'Failed to fetch staff' });
-            return;
+app.post('/api/artists', (req, res) => {
+    const { name, nationality, type } = req.body;
+    db.query('INSERT INTO ARTIST (Name, Nationality, Type) VALUES (?, ?, ?)', [name, nationality, type], (err, result) => {
+        if (err) return res.status(500).json({ error: 'Failed to add artist' });
+        res.json({ id: result.insertId, message: 'Artist added successfully' });
+    });
+});
+
+app.delete('/api/artists/:id', (req, res) => {
+    const artistId = req.params.id;
+    db.query('SELECT COUNT(*) as count FROM PRODUCED_BY WHERE Artist_ID = ?', [artistId], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Check failed' });
+
+        if (results[0].count > 0) {
+            return res.status(400).json({ error: 'Cannot delete artist with existing records' });
         }
+
+        db.query('DELETE FROM ARTIST WHERE Artist_ID = ?', [artistId], (err, result) => {
+            if (err) return res.status(500).json({ error: 'Delete failed' });
+            res.json({ message: 'Artist deleted successfully' });
+        });
+    });
+});
+
+
+// =====================
+// CUSTOMERS ENDPOINTS
+// =====================
+app.get('/api/customers', (req, res) => {
+    db.query('SELECT * FROM CUSTOMER ORDER BY Customer_ID DESC', (err, results) => {
+        if (err) return res.status(500).json({ error: 'Failed to fetch customers' });
         res.json(results);
     });
 });
 
-// Add new staff member
-app.post('/api/staff', (req, res) => {
-    const { name, role, salary, contact } = req.body;
-    
+app.post('/api/customers', (req, res) => {
+    const { first_name, second_name, last_name, email, membership_type, street, city, pincode, phone } = req.body;
+
     db.beginTransaction((err) => {
-        if (err) {
-            res.status(500).json({ error: 'Transaction failed' });
-            return;
-        }
-        
-        // Insert staff
-        const staffQuery = 'INSERT INTO STAFF (Name, Role, Salary) VALUES (?, ?, ?)';
-        
-        db.query(staffQuery, [name, role, salary], (err, result) => {
+        if (err) return res.status(500).json({ error: 'Transaction failed' });
+
+        const customerQuery = `
+            INSERT INTO CUSTOMER 
+            (First_Name, Second_Name, Last_Name, Email, Membership_Type, Date_Of_Join, Street, City, Pincode) 
+            VALUES (?, ?, ?, ?, ?, CURDATE(), ?, ?, ?)
+        `;
+
+        db.query(customerQuery, [first_name, second_name, last_name, email, membership_type, street, city, pincode], (err, result) => {
             if (err) {
                 db.rollback();
-                console.error('Error adding staff:', err);
-                res.status(500).json({ error: 'Failed to add staff' });
-                return;
+                return res.status(500).json({ error: 'Failed to add customer' });
             }
-            
-            const staffId = result.insertId;
-            
-            // If contact provided, add to STAFF_CONTACT table
-            if (contact) {
-                const contactQuery = 'INSERT INTO STAFF_CONTACT (Staff_ID, Contact_No) VALUES (?, ?)';
-                db.query(contactQuery, [staffId, contact], (err) => {
+
+            const customerId = result.insertId;
+
+            if (phone) {
+                db.query('INSERT INTO CUSTOMER_PHONE (Customer_ID, Phone_No) VALUES (?, ?)', [customerId, phone], (err) => {
                     if (err) {
                         db.rollback();
-                        console.error('Error adding contact:', err);
-                        res.status(500).json({ error: 'Failed to add contact' });
-                        return;
+                        return res.status(500).json({ error: 'Failed to add phone' });
                     }
-                    
-                    db.commit((err) => {
-                        if (err) {
-                            db.rollback();
-                            res.status(500).json({ error: 'Failed to commit transaction' });
-                            return;
-                        }
-                        res.json({ id: staffId, message: 'Staff member added successfully' });
-                    });
+                    db.commit();
+                    res.json({ id: customerId, message: 'Customer added successfully' });
                 });
             } else {
-                db.commit((err) => {
-                    if (err) {
-                        db.rollback();
-                        res.status(500).json({ error: 'Failed to commit transaction' });
-                        return;
-                    }
-                    res.json({ id: staffId, message: 'Staff member added successfully' });
-                });
+                db.commit();
+                res.json({ id: customerId, message: 'Customer added successfully' });
             }
         });
     });
 });
 
+
 // =====================
-// TRANSACTION ENDPOINTS
+// DASHBOARD STATS
 // =====================
-// Get all transactions with details
+app.get('/api/stats', (req, res) => {
+    const stats = {};
+
+    // 1️⃣ Total Records
+    db.query('SELECT COUNT(*) AS total FROM RECORD', (err, recordResults) => {
+        if (err) return res.status(500).json({ error: 'Failed to fetch stats' });
+        stats.totalRecords = recordResults[0].total || 0;
+
+        // 2️⃣ Total Customers
+        db.query('SELECT COUNT(*) AS total FROM CUSTOMER', (err, custResults) => {
+            if (err) return res.status(500).json({ error: 'Failed to fetch stats' });
+            stats.totalCustomers = custResults[0].total || 0;
+
+            // 3️⃣ Active Reservations
+            db.query('SELECT COUNT(*) AS total FROM RESERVATION WHERE Status = "Active"', (err, resResults) => {
+                if (err) return res.status(500).json({ error: 'Failed to fetch stats' });
+                stats.activeReservations = resResults[0].total || 0;
+
+                // 4️⃣ Today's Sales
+                db.query('SELECT IFNULL(SUM(Total_Amount), 0) AS total FROM TRANSACTION WHERE DATE(Transaction_Date) = CURDATE()', (err, salesResults) => {
+                    if (err) return res.status(500).json({ error: 'Failed to fetch stats' });
+                    stats.todaySales = salesResults[0].total || 0;
+
+                    // 5️⃣ Recent Transactions
+                    const recentQuery = `
+                        SELECT 
+                            t.Transaction_ID,
+                            t.Transaction_Date,
+                            t.Transaction_Type,
+                            t.Total_Amount,
+                            c.First_Name,
+                            c.Last_Name,
+                            r.Title
+                        FROM TRANSACTION t
+                        LEFT JOIN BUYS b ON t.Transaction_ID = b.Transaction_ID
+                        LEFT JOIN CUSTOMER c ON b.Customer_ID = c.Customer_ID
+                        LEFT JOIN RECORD r ON b.Record_ID = r.Record_ID
+                        ORDER BY t.Transaction_Date DESC, t.Transaction_ID DESC
+                        LIMIT 5;
+                    `;
+                    db.query(recentQuery, (err, recents) => {
+                        if (err) return res.status(500).json({ error: 'Failed to fetch recents' });
+                        stats.recentTransactions = recents || [];
+                        res.json(stats);
+                    });
+                });
+            });
+        });
+    });
+});
+
+
+// =====================
+// STAFF ENDPOINTS
+// =====================
+app.get('/api/staff', (req, res) => {
+    db.query('SELECT * FROM STAFF ORDER BY Staff_ID DESC', (err, results) => {
+        if (err) return res.status(500).json({ error: 'Failed to fetch staff' });
+        res.json(results);
+    });
+});
+
+app.post('/api/staff', (req, res) => {
+    const { name, role, salary, contact } = req.body;
+    db.beginTransaction((err) => {
+        if (err) return res.status(500).json({ error: 'Transaction failed' });
+
+        db.query('INSERT INTO STAFF (Name, Role, Salary) VALUES (?, ?, ?)', [name, role, salary], (err, result) => {
+            if (err) {
+                db.rollback();
+                return res.status(500).json({ error: 'Failed to add staff' });
+            }
+
+            const staffId = result.insertId;
+
+            if (contact) {
+                db.query('INSERT INTO STAFF_CONTACT (Staff_ID, Contact_No) VALUES (?, ?)', [staffId, contact], (err) => {
+                    if (err) {
+                        db.rollback();
+                        return res.status(500).json({ error: 'Failed to add contact' });
+                    }
+                    db.commit();
+                    res.json({ id: staffId, message: 'Staff member added successfully' });
+                });
+            } else {
+                db.commit();
+                res.json({ id: staffId, message: 'Staff member added successfully' });
+            }
+        });
+    });
+});
+
+
+// =====================
+// TRANSACTIONS ENDPOINTS
+// =====================
 app.get('/api/transactions', (req, res) => {
     const query = `
         SELECT 
             t.*,
             c.First_Name, c.Last_Name,
-            r.Title as Record_Title,
-            s.Name as Staff_Name
+            r.Title AS Record_Title,
+            s.Name AS Staff_Name
         FROM TRANSACTION t
         LEFT JOIN BUYS b ON t.Transaction_ID = b.Transaction_ID
         LEFT JOIN CUSTOMER c ON b.Customer_ID = c.Customer_ID
@@ -432,118 +288,179 @@ app.get('/api/transactions', (req, res) => {
         ORDER BY t.Transaction_Date DESC, t.Transaction_ID DESC
         LIMIT 50
     `;
-    
     db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error fetching transactions:', err);
-            res.status(500).json({ error: 'Failed to fetch transactions' });
-            return;
-        }
+        if (err) return res.status(500).json({ error: 'Failed to fetch transactions' });
         res.json(results);
     });
 });
 
-// Process a new transaction (sale/return)
 app.post('/api/transactions', (req, res) => {
     const { customer_id, record_id, staff_id, quantity, unit_price, transaction_type } = req.body;
     const total_amount = quantity * unit_price;
-    
+
     db.beginTransaction((err) => {
-        if (err) {
-            res.status(500).json({ error: 'Transaction failed' });
-            return;
-        }
-        
-        // Check available copies
+        if (err) return res.status(500).json({ error: 'Transaction failed' });
+
         db.query('SELECT Available_Copies FROM RECORD WHERE Record_ID = ?', [record_id], (err, results) => {
-            if (err) {
+            if (err || !results.length) {
                 db.rollback();
-                res.status(500).json({ error: 'Failed to check inventory' });
-                return;
+                return res.status(500).json({ error: 'Invalid record' });
             }
-            
-            if (results.length === 0) {
+
+            const available = results[0].Available_Copies;
+            if (transaction_type === 'Sale' && available < quantity) {
                 db.rollback();
-                res.status(404).json({ error: 'Record not found' });
-                return;
+                return res.status(400).json({ error: `Only ${available} copies available` });
             }
-            
-            const availableCopies = results[0].Available_Copies;
-            
-            if (transaction_type === 'Sale' && availableCopies < quantity) {
-                db.rollback();
-                res.status(400).json({ error: `Only ${availableCopies} copies available` });
-                return;
-            }
-            
-            // Insert transaction
-            const transQuery = 'INSERT INTO TRANSACTION (Transaction_Type, Transaction_Date, Unit_Price, Quantity, Total_Amount) VALUES (?, NOW(), ?, ?, ?)';
-            
-            db.query(transQuery, [transaction_type, unit_price, quantity, total_amount], (err, result) => {
-                if (err) {
-                    db.rollback();
-                    console.error('Error creating transaction:', err);
-                    res.status(500).json({ error: 'Failed to create transaction' });
-                    return;
-                }
-                
-                const transactionId = result.insertId;
-                
-                // Insert into BUYS table
-                db.query('INSERT INTO BUYS (Customer_ID, Record_ID, Transaction_ID) VALUES (?, ?, ?)',
-                    [customer_id, record_id, transactionId], (err) => {
+
+            db.query('INSERT INTO TRANSACTION (Transaction_Type, Transaction_Date, Unit_Price, Quantity, Total_Amount) VALUES (?, NOW(), ?, ?, ?)',
+                [transaction_type, unit_price, quantity, total_amount], (err, result) => {
                     if (err) {
                         db.rollback();
-                        console.error('Error linking transaction:', err);
-                        res.status(500).json({ error: 'Failed to link transaction' });
-                        return;
+                        return res.status(500).json({ error: 'Failed to create transaction' });
                     }
-                    
-                    // Insert into PROCESSED_BY table
-                    db.query('INSERT INTO PROCESSED_BY (Transaction_ID, Staff_ID) VALUES (?, ?)',
-                        [transactionId, staff_id], (err) => {
+
+                    const tid = result.insertId;
+
+                    db.query('INSERT INTO BUYS (Customer_ID, Record_ID, Transaction_ID) VALUES (?, ?, ?)', [customer_id, record_id, tid], (err) => {
                         if (err) {
                             db.rollback();
-                            console.error('Error linking staff:', err);
-                            res.status(500).json({ error: 'Failed to link staff' });
-                            return;
+                            return res.status(500).json({ error: 'Failed to link customer' });
                         }
-                        
-                        // Update available copies
-                        const newQuantity = transaction_type === 'Sale' ? 
-                            availableCopies - quantity : 
-                            availableCopies + quantity;
-                        
-                        db.query('UPDATE RECORD SET Available_Copies = ? WHERE Record_ID = ?',
-                            [newQuantity, record_id], (err) => {
+
+                        db.query('INSERT INTO PROCESSED_BY (Transaction_ID, Staff_ID) VALUES (?, ?)', [tid, staff_id], (err) => {
                             if (err) {
                                 db.rollback();
-                                console.error('Error updating inventory:', err);
-                                res.status(500).json({ error: 'Failed to update inventory' });
-                                return;
+                                return res.status(500).json({ error: 'Failed to link staff' });
                             }
-                            
-                            db.commit((err) => {
+
+                            const newQty = transaction_type === 'Sale' ? available - quantity : available + quantity;
+                            db.query('UPDATE RECORD SET Available_Copies = ? WHERE Record_ID = ?', [newQty, record_id], (err) => {
                                 if (err) {
                                     db.rollback();
-                                    res.status(500).json({ error: 'Failed to commit transaction' });
-                                    return;
+                                    return res.status(500).json({ error: 'Failed to update inventory' });
                                 }
-                                res.json({ 
-                                    id: transactionId, 
-                                    message: `${transaction_type} processed successfully`,
-                                    total: total_amount 
-                                });
+
+                                db.commit();
+                                res.json({ id: tid, message: `${transaction_type} processed successfully`, total: total_amount });
                             });
                         });
                     });
                 });
+        });
+    });
+});
+
+
+// =====================
+// RESERVATIONS ENDPOINTS
+// =====================
+app.get('/api/reservations', (req, res) => {
+    const query = `
+        SELECT 
+            r.Reservation_ID,
+            r.Reservation_Date,
+            r.Status,
+            c.First_Name, c.Last_Name,
+            rec.Title AS Record_Title
+        FROM RESERVATION r
+        JOIN RESERVES rs ON r.Reservation_ID = rs.Reservation_ID
+        JOIN CUSTOMER c ON rs.Customer_ID = c.Customer_ID
+        JOIN RECORD rec ON rs.Record_ID = rec.Record_ID
+        ORDER BY r.Reservation_ID DESC
+    `;
+    db.query(query, (err, results) => {
+        if (err) return res.status(500).json({ error: 'Failed to fetch reservations' });
+        res.json(results);
+    });
+});
+
+app.post('/api/reservations', (req, res) => {
+    const { customer_id, record_id } = req.body;
+    db.beginTransaction((err) => {
+        if (err) return res.status(500).json({ error: 'Transaction failed' });
+
+        db.query('INSERT INTO RESERVATION (Reservation_Date, Status) VALUES (CURDATE(), "Active")', (err, result) => {
+            if (err) {
+                db.rollback();
+                return res.status(500).json({ error: 'Failed to create reservation' });
+            }
+            const rid = result.insertId;
+
+            db.query('INSERT INTO RESERVES (Customer_ID, Record_ID, Reservation_ID) VALUES (?, ?, ?)', [customer_id, record_id, rid], (err) => {
+                if (err) {
+                    db.rollback();
+                    return res.status(500).json({ error: 'Failed to link reservation' });
+                }
+                db.commit();
+                res.json({ id: rid, message: 'Reservation created successfully' });
             });
         });
     });
 });
 
-// Start server
+app.put('/api/reservations/:id', (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    db.query('UPDATE RESERVATION SET Status = ? WHERE Reservation_ID = ?', [status, id], (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to update status' });
+        res.json({ message: 'Status updated' });
+    });
+});
+
+app.delete('/api/reservations/:id', (req, res) => {
+    const { id } = req.params;
+    db.beginTransaction((err) => {
+        if (err) return res.status(500).json({ error: 'Transaction failed' });
+
+        db.query('DELETE FROM RESERVES WHERE Reservation_ID = ?', [id], (err) => {
+            if (err) {
+                db.rollback();
+                return res.status(500).json({ error: 'Failed to delete link' });
+            }
+            db.query('DELETE FROM RESERVATION WHERE Reservation_ID = ?', [id], (err) => {
+                if (err) {
+                    db.rollback();
+                    return res.status(500).json({ error: 'Failed to delete reservation' });
+                }
+                db.commit();
+                res.json({ message: 'Reservation deleted successfully' });
+            });
+        });
+    });
+});
+
+
+// =====================
+// LABELS ENDPOINTS
+// =====================
+app.get('/api/labels', (req, res) => {
+    db.query('SELECT * FROM LABEL ORDER BY Label_ID DESC', (err, results) => {
+        if (err) return res.status(500).json({ error: 'Failed to fetch labels' });
+        res.json(results);
+    });
+});
+
+app.post('/api/labels', (req, res) => {
+    const { name, address } = req.body;
+    db.query('INSERT INTO LABEL (Name, Address) VALUES (?, ?)', [name, address], (err, result) => {
+        if (err) return res.status(500).json({ error: 'Failed to add label' });
+        res.json({ id: result.insertId, message: 'Label added successfully' });
+    });
+});
+
+app.delete('/api/labels/:id', (req, res) => {
+    const { id } = req.params;
+    db.query('DELETE FROM LABEL WHERE Label_ID = ?', [id], (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to delete label' });
+        res.json({ message: 'Label deleted successfully' });
+    });
+});
+
+
+// =====================
+// START SERVER
+// =====================
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
