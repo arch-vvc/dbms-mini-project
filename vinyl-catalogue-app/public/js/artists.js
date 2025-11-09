@@ -1,3 +1,4 @@
+
 // Artists Functions
 async function loadArtists() {
     try {

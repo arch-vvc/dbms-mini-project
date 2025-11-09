@@ -1,3 +1,4 @@
+
 async function loadStaff() {
     try {
         const response = await fetch(`${API_URL}/staff`);

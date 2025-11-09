@@ -61,29 +61,47 @@ app.post('/api/records', (req, res) => {
     });
 });
 
+// ✅ FIXED DELETE RECORD
 app.delete('/api/records/:id', (req, res) => {
     const recordId = req.params.id;
+
     db.beginTransaction((err) => {
         if (err) return res.status(500).json({ error: 'Transaction failed' });
 
-        db.query('DELETE FROM PRODUCED_BY WHERE Record_ID = ?', [recordId], (err) => {
-            if (err) {
-                db.rollback();
-                return res.status(500).json({ error: 'Failed to delete relationships' });
-            }
+        const relationTables = [
+            'DELETE FROM PRODUCED_BY WHERE Record_ID = ?',
+            'DELETE FROM DISTRIBUTED_BY WHERE Record_ID = ?',
+            'DELETE FROM BUYS WHERE Record_ID = ?',
+            'DELETE FROM RESERVES WHERE Record_ID = ?'
+        ];
 
-            db.query('DELETE FROM RECORD WHERE Record_ID = ?', [recordId], (err) => {
+        let completed = 0;
+        relationTables.forEach((query) => {
+            db.query(query, [recordId], (err) => {
                 if (err) {
+                    console.error('Error deleting related data:', err);
                     db.rollback();
-                    return res.status(500).json({ error: 'Failed to delete record' });
+                    return res.status(500).json({ error: 'Failed to delete related data' });
                 }
-                db.commit((err) => {
-                    if (err) {
-                        db.rollback();
-                        return res.status(500).json({ error: 'Commit failed' });
-                    }
-                    res.json({ message: 'Record deleted successfully' });
-                });
+
+                completed++;
+                if (completed === relationTables.length) {
+                    db.query('DELETE FROM RECORD WHERE Record_ID = ?', [recordId], (err) => {
+                        if (err) {
+                            console.error('Error deleting record:', err);
+                            db.rollback();
+                            return res.status(500).json({ error: 'Failed to delete record' });
+                        }
+
+                        db.commit((err) => {
+                            if (err) {
+                                db.rollback();
+                                return res.status(500).json({ error: 'Commit failed' });
+                            }
+                            res.json({ message: 'Record deleted successfully' });
+                        });
+                    });
+                }
             });
         });
     });
@@ -117,7 +135,7 @@ app.delete('/api/artists/:id', (req, res) => {
             return res.status(400).json({ error: 'Cannot delete artist with existing records' });
         }
 
-        db.query('DELETE FROM ARTIST WHERE Artist_ID = ?', [artistId], (err, result) => {
+        db.query('DELETE FROM ARTIST WHERE Artist_ID = ?', [artistId], (err) => {
             if (err) return res.status(500).json({ error: 'Delete failed' });
             res.json({ message: 'Artist deleted successfully' });
         });
@@ -136,7 +154,7 @@ app.get('/api/customers', (req, res) => {
 });
 
 app.post('/api/customers', (req, res) => {
-    const { first_name, second_name, last_name, email, membership_type, street, city, pincode, phone } = req.body;
+    const { first_name, second_name, last_name, email, membership_type, street, city, pincode,phone } = req.body;
 
     db.beginTransaction((err) => {
         if (err) return res.status(500).json({ error: 'Transaction failed' });
@@ -150,6 +168,9 @@ app.post('/api/customers', (req, res) => {
         db.query(customerQuery, [first_name, second_name, last_name, email, membership_type, street, city, pincode], (err, result) => {
             if (err) {
                 db.rollback();
+                if (err.sqlState === '45000') {
+                    return res.status(400).json({ error: err.sqlMessage });
+                }
                 return res.status(500).json({ error: 'Failed to add customer' });
             }
 
@@ -179,27 +200,22 @@ app.post('/api/customers', (req, res) => {
 app.get('/api/stats', (req, res) => {
     const stats = {};
 
-    // 1️⃣ Total Records
     db.query('SELECT COUNT(*) AS total FROM RECORD', (err, recordResults) => {
         if (err) return res.status(500).json({ error: 'Failed to fetch stats' });
         stats.totalRecords = recordResults[0].total || 0;
 
-        // 2️⃣ Total Customers
         db.query('SELECT COUNT(*) AS total FROM CUSTOMER', (err, custResults) => {
             if (err) return res.status(500).json({ error: 'Failed to fetch stats' });
             stats.totalCustomers = custResults[0].total || 0;
 
-            // 3️⃣ Active Reservations
             db.query('SELECT COUNT(*) AS total FROM RESERVATION WHERE Status = "Active"', (err, resResults) => {
                 if (err) return res.status(500).json({ error: 'Failed to fetch stats' });
                 stats.activeReservations = resResults[0].total || 0;
 
-                // 4️⃣ Today's Sales
                 db.query('SELECT IFNULL(SUM(Total_Amount), 0) AS total FROM TRANSACTION WHERE DATE(Transaction_Date) = CURDATE()', (err, salesResults) => {
                     if (err) return res.status(500).json({ error: 'Failed to fetch stats' });
                     stats.todaySales = salesResults[0].total || 0;
 
-                    // 5️⃣ Recent Transactions
                     const recentQuery = `
                         SELECT 
                             t.Transaction_ID,
@@ -362,6 +378,8 @@ app.get('/api/reservations', (req, res) => {
             r.Reservation_Date,
             r.Status,
             c.First_Name, c.Last_Name,
+            rs.Customer_ID,
+            rs.Record_ID,
             rec.Title AS Record_Title
         FROM RESERVATION r
         JOIN RESERVES rs ON r.Reservation_ID = rs.Reservation_ID

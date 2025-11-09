@@ -1,0 +1,266 @@
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+  color: #f1f1f1;
+}
+
+/* Page Background */
+body {
+  background: #121212;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Header Bar */
+header {
+  background: rgba(30, 30, 30, 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+header h1 {
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+/* Sidebar Navigation */
+nav {
+  width: 220px;
+  background: #1b1b1b;
+  padding-top: 2rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  height: 100%;
+  overflow-y: auto;
+}
+
+nav::-webkit-scrollbar { display: none; }
+
+.tab-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.9rem 1.5rem;
+  border: none;
+  background: transparent;
+  color: #aaa;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.tab-button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tab-button.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-left: 3px solid #FF2D55; /* Apple pink accent */
+}
+
+/* Main Content Area */
+main {
+  flex: 1;
+  background: #121212;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.page-section 
+{ 
+    scroll-snap-align: start; min-height: 100vh; 
+}
+
+/* Stat Cards (Dashboard) */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: linear-gradient(145deg, #1e1e1e, #181818);
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.stat-card h3 {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 0.4rem;
+}
+
+.stat-card p {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 0.9rem 1rem;
+  text-align: left;
+}
+
+th {
+  background: #2a2a2a;
+  color: #ccc;
+  font-weight: 500;
+}
+
+tr:nth-child(even) {
+  background: #181818;
+}
+
+tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+button {
+  background: #FF2D55;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #ff476d;
+}
+
+.btn-delete {
+  background: #d9534f;
+}
+
+.btn-delete:hover {
+  background: #f76b66;
+}
+
+/* Forms */
+form {
+  background: #1a1a1a;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+
+input, select {
+  background: #2a2a2a;
+  border: none;
+  color: #f1f1f1;
+  padding: 0.6rem;
+  border-radius: 6px;
+  width: 100%;
+}
+
+label {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1rem;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.badge.active { background: #28a745; color: #fff; }
+.badge.completed { background: #666; color: #fff; }
+.badge.cancelled { background: #c0392b; color: #fff; }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}
+
+/* Animations */
+.tab-content {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.tab-content.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Smooth Scroll + Section Layout */
+main {
+  scroll-snap-type: y proximity;
+  overflow-y: auto;
+  height: 100vh;
+  scroll-behavior: smooth;
+}
+
+/* Each section full height with breathing room */
+.page-section {
+  min-height: 100vh;
+  padding: 4rem 2.5rem;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+
+/* Section titles look cleaner */
+.page-section h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Add more space under the search bars/forms */
+.page-section form {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Make search bar + buttons align neatly */
+.page-section input[type="text"] {
+  margin-right: 0.5rem;
+  border-radius: 8px;
+}
+.page-section button {
+  margin-right: 0.3rem;
+}

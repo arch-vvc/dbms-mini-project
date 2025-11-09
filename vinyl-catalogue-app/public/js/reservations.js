@@ -1,3 +1,4 @@
+
 // =============================
 // RESERVATIONS.JS
 // =============================
@@ -107,7 +108,7 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
         const result = await response.json();
 
         if (response.ok) {
-            alert(result.message);
+            
             document.getElementById('reservationForm').reset();
             loadReservations();
             loadReservationDropdowns();
@@ -130,7 +131,7 @@ async function updateReservation(id, status) {
         });
         const result = await response.json();
         if (response.ok) {
-            alert(result.message);
+            
             loadReservations();
         } else {
             alert('Error updating status: ' + result.error);
@@ -148,7 +149,7 @@ async function deleteReservation(id) {
         const response = await fetch(`${API_URL}/reservations/${id}`, { method: 'DELETE' });
         const result = await response.json();
         if (response.ok) {
-            alert(result.message);
+
             loadReservations();
         } else {
             alert('Error deleting reservation: ' + result.error);

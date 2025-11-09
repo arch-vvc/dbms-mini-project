@@ -1,3 +1,4 @@
+
 async function loadTransactions() {
     try {
         await loadTransactionDropdowns();
@@ -125,5 +126,18 @@ document.getElementById('transactionForm').addEventListener('submit', async (e) 
     } catch (error) {
         console.error('Error:', error);
         alert('Error processing transaction');
+    }
+    
+    try{
+        
+        const response=await fetch(`${API_URL}/reservations`);
+        const reservations=await response.json();
+        for(const reservation of reservations){
+            if(reservation.Customer_ID==transData.customer_id && reservation.Record_ID==transData.record_id){
+                updateReservation(reservation.Reservation_ID,'Completed');
+            }
+    }
+    }catch(error){
+        console.error('Error updating reservation status:',error);
     }
 });

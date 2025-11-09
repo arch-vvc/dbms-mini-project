@@ -1,4 +1,9 @@
-function showTab(tabName, event) {
+/**
+ * Handles switching between tabs in the main navigation.
+ * @param {string} tabName - The ID of the tab content to show (e.g., 'dashboard', 'records')
+ * @param {HTMLElement} clickedButton - The button element that was clicked (passed as 'this')
+ */
+function showTab(tabName, clickedButton) {
     // Hide all tabs
     const tabs = document.querySelectorAll('.tab-content');
     tabs.forEach(tab => tab.classList.remove('active'));
@@ -11,7 +16,9 @@ function showTab(tabName, event) {
     document.getElementById(tabName).classList.add('active');
 
     // Add active class to clicked button
-    if (event) event.target.classList.add('active');
+    if (clickedButton) {
+        clickedButton.classList.add('active');
+    }
 
     // Load data for the selected tab
     switch (tabName) {
@@ -45,5 +52,17 @@ function showTab(tabName, event) {
 
 // Initialize app when page loads
 window.addEventListener('DOMContentLoaded', () => {
-    loadDashboardStats();
+    // Find the default active button and tab, then load its data
+    const activeButton = document.querySelector('.tab-button.active');
+    if (activeButton) {
+        // We get the tab name from the onclick attribute
+        // Example: onclick="showTab('dashboard', this)"
+        const onclickAttr = activeButton.getAttribute('onclick');
+        const tabName = onclickAttr.split("'")[1];
+
+        if (tabName === 'dashboard') {
+            loadDashboardStats();
+        }
+        // You could add else-if blocks here if the default tab isn't dashboard
+    }
 });

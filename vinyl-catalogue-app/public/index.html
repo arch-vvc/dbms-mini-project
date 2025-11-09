@@ -3,47 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vinyl Catalogue Management System</title>
+    <title>Vinyl Catalogue</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+        /* 1. Set the main page background to dark and default text to light */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #121212; /* Spotify's dark background */
+            color: #E0E0E0; /* A softer white for default text */
             min-height: 100vh;
         }
+        /* 2. Make the header a dark container, remove shadow, add border */
         .header {
-            background: rgba(255,255,255,0.95);
+            background: #1E1E1E; /* A slightly lighter dark for containers */
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #333; /* Subtle separator */
         }
+        /* 3. Make the H1 text white */
         .header h1 {
-            color: #333;
+            color: #FFFFFF;
             text-align: center;
         }
+        /* 4. Make the tab navigation bar dark */
         .nav-tabs {
             display: flex;
             justify-content: center;
-            background: white;
+            background: #1E1E1E;
             padding: 10px;
             flex-wrap: wrap;
         }
+        /* 5. Style the inactive tab buttons */
         .tab-button {
             padding: 10px 20px;
             margin: 5px;
             border: none;
-            background: #f0f0f0;
+            background: #404040; /* Dark, inactive button */
+            color: #E0E0E0;
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
         }
+        /* --- KEPT --- */
         .tab-button:hover {
             background: #764ba2;
             color: white;
         }
+        /* --- KEPT --- */
         .tab-button.active {
             background: #667eea;
             color: white;
@@ -53,22 +62,26 @@
             margin: 20px auto;
             padding: 0 20px;
         }
+        /* 6. Make the main content area dark */
         .tab-content {
             display: none;
-            background: white;
+            background: #1E1E1E; /* Match the header */
             padding: 30px;
             border-radius: 10px;
             margin-top: 20px;
         }
+        /* --- KEPT --- */
         .tab-content.active {
             display: block;
         }
+        /* --- KEPT --- (Looks great on dark) */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
+        /* --- KEPT --- (Looks great on dark) */
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -80,27 +93,34 @@
             font-size: 2em;
             margin: 10px 0;
         }
+        /* --- KEPT --- */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
+        /* --- KEPT --- */
         .form-group {
             display: flex;
             flex-direction: column;
         }
+        /* 7. Make form labels a lighter gray */
         label {
             margin-bottom: 5px;
             font-weight: 600;
-            color: #555;
+            color: #B3B3B3; /* Spotify's label color */
         }
+        /* 8. Style all inputs, selects, and textareas for dark mode */
         input, select, textarea {
             padding: 10px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid #444; /* Darker border */
+            background: #282828;   /* Dark input background */
+            color: #FFFFFF;         /* Light text inside inputs */
             border-radius: 5px;
             font-size: 14px;
         }
+        /* --- KEPT --- (Accent color buttons) */
         button {
             background: #667eea;
             color: white;
@@ -111,23 +131,29 @@
             font-size: 16px;
             transition: all 0.3s;
         }
+        /* --- KEPT --- (Accent color buttons) */
         button:hover {
             background: #764ba2;
         }
+        /* --- KEPT --- */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
+        /* 9. Make table borders darker */
         th, td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #404040; /* Darker border */
         }
+        /* 10. Make table headers dark */
         th {
-            background: #f5f5f5;
+            background: #282828;
             font-weight: 600;
+            color: #FFFFFF; /* White header text */
         }
+        /* --- KEPT --- */
         .actions {
             display: flex;
             gap: 10px;
@@ -152,18 +178,18 @@
 </head>
 <body>
     <div class="header">
-        <h1>🎵 Vinyl Record Store Management System</h1>
+        <h1> Vinyl Record Store</h1>
     </div>
     
     <div class="nav-tabs">
-        <button class="tab-button active" onclick="showTab('dashboard')">📊 Dashboard</button>
-        <button class="tab-button" onclick="showTab('records')">💿 Records</button>
-        <button class="tab-button" onclick="showTab('artists')">🎤 Artists</button>
-        <button class="tab-button" onclick="showTab('customers')">👥 Customers</button>
-        <button class="tab-button" onclick="showTab('transactions')">💰 Transactions</button>
-        <button class="tab-button" onclick="showTab('reservations')">📅 Reservations</button>
-        <button class="tab-button" onclick="showTab('labels')">🏷️ Labels</button>
-        <button class="tab-button" onclick="showTab('staff')">👔 Staff</button>
+        <button class="tab-button active" onclick="showTab('dashboard', this)">Dashboard</button>
+        <button class="tab-button" onclick="showTab('records', this)">Records</button>
+        <button class="tab-button" onclick="showTab('artists', this)">Artists</button>
+        <button class="tab-button" onclick="showTab('customers', this)">Customers</button>
+        <button class="tab-button" onclick="showTab('transactions', this)">Transactions</button>
+        <button class="tab-button" onclick="showTab('reservations', this)">Reservations</button>
+        <button class="tab-button" onclick="showTab('labels', this)">Labels</button>
+        <button class="tab-button" onclick="showTab('staff', this)">Staff</button>
     </div>
 
     <div class="container">
@@ -463,11 +489,11 @@
     <script src="js/dashboard.js"></script>
     <script src="js/artists.js"></script>
     <script src="js/records.js"></script>
-    <script src="js/customers.js"></script>
     <script src="js/staff.js"></script>
     <script src="js/transactions.js"></script>
     <script src="js/reservations.js"></script>
     <script src="js/labels.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/customers.js"></script>
 </body>
 </html>

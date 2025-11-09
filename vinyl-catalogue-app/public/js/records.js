@@ -1,3 +1,4 @@
+
 // Load all records
 async function loadRecords() {
     try {
@@ -5,7 +6,7 @@ async function loadRecords() {
         await loadArtistsDropdown();
         
         // Load records with artists
-        const response = await fetch(`${API_URL}/records-with-artists`);
+        const response = await fetch(`${API_URL}/records`);
         const records = await response.json();
         
         displayRecords(records);
@@ -30,7 +31,6 @@ function displayRecords(records) {
                 <tr>
                     <th>ID</th>
                     <th>Title</th>
-                    <th>Artist(s)</th>
                     <th>Genre</th>
                     <th>Edition</th>
                     <th>Catalog #</th>
@@ -47,7 +47,7 @@ function displayRecords(records) {
             <tr>
                 <td>${record.Record_ID}</td>
                 <td>${record.Title}</td>
-                <td>${record.Artists || 'No artist assigned'}</td>
+    
                 <td>${record.Genre || '-'}</td>
                 <td>${record.Edition || '-'}</td>
                 <td>${record.Catalog_Number || '-'}</td>
@@ -107,23 +107,21 @@ async function loadArtistsDropdown() {
 }
 
 // Delete record function
+// Delete record function (Fixed)
 async function deleteRecord(id, title) {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) {
+    if (!confirm(`Are you sure you want to delete "${title}"? This will remove all related data (reservations, purchases, etc.)`)) {
         return;
     }
-    
+
     try {
-        const response = await fetch(`${API_URL}/records/${id}`, {
-            method: 'DELETE'
-        });
-        
+        const response = await fetch(`${API_URL}/records/${id}`, { method: 'DELETE' });
         const result = await response.json();
-        
+
         if (response.ok) {
-            alert('Record deleted successfully!');
-            loadRecords(); // Reload the list
+            alert(result.message || 'Record deleted successfully!');
+            loadRecords();
         } else {
-            alert('Error deleting record: ' + result.error);
+            alert(result.error || 'Error deleting record');
         }
     } catch (error) {
         console.error('Error:', error);
