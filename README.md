@@ -9,23 +9,37 @@ A full-stack web application for managing a vinyl record store. It covers the co
 1. [Project Overview](#1-project-overview)
 2. [Technology Stack](#2-technology-stack)
 3. [Repository Structure](#3-repository-structure)
-4. [Database Design](#4-database-design)
-   - [Entity Tables](#41-entity-tables)
-   - [Relationship / Junction Tables](#42-relationship--junction-tables)
-   - [Multi-Valued Attribute Tables](#43-multi-valued-attribute-tables)
-5. [Database Automation — Triggers, Procedures & Functions](#5-database-automation--triggers-procedures--functions)
-   - [Triggers](#51-triggers)
-   - [Stored Procedures](#52-stored-procedures)
-   - [Functions](#53-functions)
-6. [Sample Data](#6-sample-data)
-7. [Backend — Node.js / Express Server](#7-backend--nodejs--express-server)
-   - [Environment Configuration](#71-environment-configuration)
-   - [REST API Endpoints](#72-rest-api-endpoints)
-8. [Frontend — Single-Page Application](#8-frontend--single-page-application)
-   - [Page Layout & Tabs](#81-page-layout--tabs)
-   - [JavaScript Modules](#82-javascript-modules)
-9. [Setup & Running the Application](#9-setup--running-the-application)
-10. [Key Design Decisions & Business Rules](#10-key-design-decisions--business-rules)
+4. [SQL Files — Detailed Walkthrough](#4-sql-files--detailed-walkthrough)
+   - [Entity Table Files](#41-entity-table-files)
+   - [Multi-Valued Attribute Table Files](#42-multi-valued-attribute-table-files)
+   - [Junction / Relationship Table Files](#43-junction--relationship-table-files)
+   - [Automation File](#44-automation-file)
+5. [Database Design Summary](#5-database-design-summary)
+   - [Entity Tables](#51-entity-tables)
+   - [Relationship / Junction Tables](#52-relationship--junction-tables)
+   - [Multi-Valued Attribute Tables](#53-multi-valued-attribute-tables)
+6. [Database Automation — Triggers, Procedures & Functions](#6-database-automation--triggers-procedures--functions)
+   - [Triggers](#61-triggers)
+   - [Stored Procedures](#62-stored-procedures)
+   - [Functions](#63-functions)
+7. [Sample Data](#7-sample-data)
+8. [Backend — Node.js / Express Server](#8-backend--nodejs--express-server)
+   - [Environment Configuration](#81-environment-configuration)
+   - [REST API Endpoints](#82-rest-api-endpoints)
+9. [Frontend — Single-Page Application](#9-frontend--single-page-application)
+   - [Visual Design & CSS](#91-visual-design--css)
+   - [Tab Navigation & Initialisation](#92-tab-navigation--initialisation)
+   - [Dashboard Tab](#93-dashboard-tab)
+   - [Records Tab](#94-records-tab)
+   - [Artists Tab](#95-artists-tab)
+   - [Customers Tab](#96-customers-tab)
+   - [Transactions Tab](#97-transactions-tab)
+   - [Reservations Tab](#98-reservations-tab)
+   - [Labels Tab](#99-labels-tab)
+   - [Staff Tab](#910-staff-tab)
+   - [JavaScript Module Reference](#911-javascript-module-reference)
+10. [Setup & Running the Application](#10-setup--running-the-application)
+11. [Key Design Decisions & Business Rules](#11-key-design-decisions--business-rules)
 
 ---
 
@@ -63,55 +77,120 @@ The Vinyl Catalogue Management System models a physical vinyl record store with 
 ```
 dbms-mini-project/
 │
-├── README.md                              ← this file
+├── README.md
 │
 │── SQL dump files (one per table + one for automation objects)
-├── vinylcatalogue_record.sql              ← RECORD table + seed data
-├── vinylcatalogue_artist.sql              ← ARTIST table + seed data
-├── vinylcatalogue_customer.sql            ← CUSTOMER table + seed data
-├── vinylcatalogue_customer_phone.sql      ← CUSTOMER_PHONE multi-valued table
-├── vinylcatalogue_staff.sql               ← STAFF table + seed data
-├── vinylcatalogue_staff_contact.sql       ← STAFF_CONTACT multi-valued table
-├── vinylcatalogue_label.sql               ← LABEL table + seed data
-├── vinylcatalogue_label_contact.sql       ← LABEL_CONTACT multi-valued table
-├── vinylcatalogue_transaction.sql         ← TRANSACTION table + seed data
-├── vinylcatalogue_reservation.sql         ← RESERVATION table + seed data
-├── vinylcatalogue_produced_by.sql         ← PRODUCED_BY junction table
-├── vinylcatalogue_distributed_by.sql      ← DISTRIBUTED_BY junction table
-├── vinylcatalogue_buys.sql                ← BUYS junction table
-├── vinylcatalogue_reserves.sql            ← RESERVES junction table
-├── vinylcatalogue_processed_by.sql        ← PROCESSED_BY junction table
-├── vinylcatalogue_refers.sql              ← REFERS self-referential table
-├── vinylcatalogue_pro_trig_fun.sql        ← All triggers, stored procedures, functions
+├── vinylcatalogue_record.sql
+├── vinylcatalogue_artist.sql
+├── vinylcatalogue_customer.sql
+├── vinylcatalogue_customer_phone.sql
+├── vinylcatalogue_staff.sql
+├── vinylcatalogue_staff_contact.sql
+├── vinylcatalogue_label.sql
+├── vinylcatalogue_label_contact.sql
+├── vinylcatalogue_transaction.sql
+├── vinylcatalogue_reservation.sql
+├── vinylcatalogue_produced_by.sql
+├── vinylcatalogue_distributed_by.sql
+├── vinylcatalogue_buys.sql
+├── vinylcatalogue_reserves.sql
+├── vinylcatalogue_processed_by.sql
+├── vinylcatalogue_refers.sql
+├── vinylcatalogue_pro_trig_fun.sql
 │
-└── vinyl-catalogue-app/                   ← Full-stack web application
+└── vinyl-catalogue-app/
     ├── package.json
-    ├── server.js                          ← Express REST API server
-    ├── .env                               ← DB credentials (not committed)
-    └── public/                            ← Static frontend (served by Express)
-        ├── index.html                     ← Single-page app shell + all tab UIs
+    ├── server.js
+    ├── .env
+    └── public/
+        ├── index.html
         ├── css/
         │   └── style.css
         └── js/
-            ├── config.js                  ← API base URL constant
-            ├── main.js                    ← Tab navigation + page init
-            ├── dashboard.js               ← Dashboard stats + recent transactions
-            ├── records.js                 ← Record CRUD + search
-            ├── artists.js                 ← Artist CRUD + search
-            ├── customers.js               ← Customer CRUD + search + membership filter
-            ├── staff.js                   ← Staff CRUD
-            ├── transactions.js            ← Transaction form + transaction list
-            ├── reservations.js            ← Reservation CRUD + status update
-            └── labels.js                  ← Label CRUD
+            ├── config.js
+            ├── main.js
+            ├── dashboard.js
+            ├── records.js
+            ├── artists.js
+            ├── customers.js
+            ├── staff.js
+            ├── transactions.js
+            ├── reservations.js
+            └── labels.js
 ```
 
 ---
 
-## 4. Database Design
+## 4. SQL Files — Detailed Walkthrough
+
+All SQL files are MySQL 8.0 dumps generated with `mysqldump`. Each file drops and recreates its table, then inserts seed rows. They need to be imported in the dependency order shown in the [Setup section](#10-setup--running-the-application) because junction tables reference entity tables via foreign keys.
+
+### 4.1 Entity Table Files
+
+**`vinylcatalogue_record.sql`**
+Defines and seeds the `RECORD` table, which is the core catalogue entity. It creates seven columns: `Record_ID` (INT primary key), `Title`, `Genre`, `Edition`, `Catalog_Number`, `Total_Copies`, and `Available_Copies`. The seed data contains 17 rows split between classic real-world albums (In Rainbows by Radiohead, Abbey Road by The Beatles, Thriller by Michael Jackson, Nevermind by Nirvana, 1989 by Taylor Swift, etc.) and fictional releases like "Electric Dreams" (Synthwave, Limited edition) and "Café Au Lait" (Jazz, Deluxe). The `Available_Copies` values are lower than `Total_Copies` on several rows to simulate copies already sold — for example Abbey Road shows 0 available out of 15 total.
+
+**`vinylcatalogue_artist.sql`**
+Defines and seeds the `ARTIST` table with four columns: `Artist_ID`, `Name`, `Nationality`, and `Type`. The `Type` column uses free-form text values including Solo, Band, Duo, Orchestra, Group, and DJ. The 15 seeded rows include well-known acts (Radiohead, The Beatles, Daft Punk, Fleetwood Mac, Amy Winehouse, Nirvana, Coldplay, etc.) alongside fictional artists created to pair with the fictional records (The Neon Echoes, Luna Skye, DJ Groovemaster, Misty Road, Jazz Ensemble 7).
+
+**`vinylcatalogue_label.sql`**
+Defines and seeds the `LABEL` table with three columns: `Label_ID`, `Name`, and `Address`. The 13 seeded rows include real industry labels (XL Recordings, EMI Records, Epic Records, Columbia Records, Top Dawg Entertainment, Warner Bros., Island Records, Parlophone, Geffen, Republic) alongside the three fictional labels matched to the fictional records: Future Sounds Records (Los Angeles), Vintage Wax (London), and Global Beats (Berlin).
+
+**`vinylcatalogue_customer.sql`**
+Defines and seeds the `CUSTOMER` table with ten columns covering full name (first, optional middle, last), email, membership tier, join date, and address fields (street, city, pincode). The 16 seeded customers span two ID ranges: IDs 1–11 are an initial set with US city addresses (New York, Boston, Seattle, Austin, Chicago, Denver, Miami, LA, Dallas, San Diego) and membership tiers like Gold, Silver, Bronze, and Platinum; IDs 501–505 are a second batch using different naming conventions (Sarah Connor, Mark Ruffalo, Emily Wong, etc.). The `Date_Of_Join` values range from January 2023 through January 2025.
+
+**`vinylcatalogue_staff.sql`**
+Defines and seeds the `STAFF` table with four columns: `Staff_ID`, `Name`, `Role`, and `Salary`. The 13 seeded employees are spread across two ID ranges: IDs 1–10 have roles like Cashier, Manager, Assistant, Sales, and Inventory with salaries from $40,000 to $72,000; IDs 401–403 use more formal role titles (Sales Associate, Inventory Specialist) and were added in a second batch. The salary column uses `DECIMAL(10,2)`, allowing for precise dollar amounts.
+
+**`vinylcatalogue_transaction.sql`**
+Defines and seeds the `TRANSACTION` table with six columns: `Transaction_ID`, `Transaction_Type`, `Transaction_Date`, `Unit_Price`, `Quantity`, and `Total_Amount`. All 20 seeded rows are typed as "Purchase" (not "Return"), giving a realistic baseline of sales history spanning January 2024 through October 2025. The `Total_Amount` values are pre-computed in the seed data; on live inserts the `before_transaction_insert` trigger handles this automatically. Unit prices range from $25 to $800, reflecting the wide price range of vinyl records from recent pressings to vintage collector items.
+
+**`vinylcatalogue_reservation.sql`**
+Defines and seeds the `RESERVATION` table with three columns: `Reservation_ID`, `Reservation_Date`, and `Status`. The 16 seeded reservations span two date ranges (2024 and October 2025) with a mix of "Pending" and "Completed" statuses. There are no "Active" or "Cancelled" rows in the seed data, though the application supports those states. The `Status` field is a free-form VARCHAR(20), so any string value is accepted at the database level.
+
+### 4.2 Multi-Valued Attribute Table Files
+
+**`vinylcatalogue_customer_phone.sql`**
+Defines the `CUSTOMER_PHONE` table, which stores phone numbers for customers as a separate table rather than a column on CUSTOMER — the standard 1NF approach for attributes that can have multiple values per entity. The primary key is a composite of `(Customer_ID, Phone_No)`, meaning one customer can have multiple phone numbers. The file seeds 15 rows, one per customer, using two format styles: 10-digit numeric strings (e.g. `9990001111`) for the first 10 customers and hyphenated formats (e.g. `555-0001`) for the 501–505 batch.
+
+**`vinylcatalogue_staff_contact.sql`**
+Defines the `STAFF_CONTACT` table on the same pattern as CUSTOMER_PHONE. The composite primary key is `(Staff_ID, Contact_No)`. It seeds 13 rows, one per staff member, again with two number formats: 10-digit strings for IDs 1–10 and hyphenated for IDs 401–403.
+
+**`vinylcatalogue_label_contact.sql`**
+Defines the `LABEL_CONTACT` table for record label contact numbers, using the same composite primary key pattern `(Label_ID, Contact_No)`. It seeds 13 rows: 6-digit numeric strings (e.g. `777001`) for the 10 real-world labels and hyphenated numbers for the three fictional labels.
+
+### 4.3 Junction / Relationship Table Files
+
+**`vinylcatalogue_produced_by.sql`**
+Defines the `PRODUCED_BY` table, which is a many-to-many junction between RECORD and ARTIST. The composite primary key is `(Record_ID, Artist_ID)`. Both columns are also foreign keys referencing their parent tables. The 15 seeded rows link each real-world record to its corresponding artist (e.g. Record 1 → Radiohead, Record 2 → The Beatles) and each fictional record to its fictional artist (e.g. Record 301 → The Neon Echoes). Notably, Radiohead is linked to both Record 1 (In Rainbows) and Record 8 (OK Computer), demonstrating the many-to-many capability.
+
+**`vinylcatalogue_distributed_by.sql`**
+Defines the `DISTRIBUTED_BY` junction table between RECORD and LABEL, again with a `(Record_ID, Label_ID)` composite primary key and FK constraints on both sides. The 15 seeded rows wire each record to one label. The fictional records split across two labels: Future Sounds Records handles Records 301 and 305; Vintage Wax handles 302 and 304; Global Beats handles 303.
+
+**`vinylcatalogue_buys.sql`**
+Defines the `BUYS` table, which is a three-way junction connecting CUSTOMER, RECORD, and TRANSACTION. The composite primary key spans all three columns `(Customer_ID, Record_ID, Transaction_ID)`, with individual FK constraints on each. This structure means a single TRANSACTION row represents one line-item of a particular record bought by a particular customer. The 20 seeded rows map the existing transactions to their customers and records — for example Customer 3 (Alice Brown) has purchased Record 3 three times (Transaction_IDs 3, 302, and 303), showing that the same customer-record pair can appear multiple times with different transaction IDs.
+
+**`vinylcatalogue_reserves.sql`**
+Defines the `RESERVES` junction table linking CUSTOMER, RECORD, and RESERVATION together. The composite primary key is `(Customer_ID, Record_ID, Reservation_ID)` with FK constraints on all three. The 16 seeded rows include an interesting pattern where Customer 3 has three separate reservation rows all pointing to Record 3 (three different Reservation_IDs: 501, 503, 504), reflecting repeat reservation attempts or a history of reservations for the same item.
+
+**`vinylcatalogue_processed_by.sql`**
+Defines the `PROCESSED_BY` table, which links each TRANSACTION to the STAFF member who handled it. Unlike the other junction tables, the primary key here is just `Transaction_ID` (not composite), making this effectively a one-to-one extension of TRANSACTION — each transaction is processed by exactly one staff member. The FK on `Staff_ID` is a regular index, not part of the PK. The 17 seeded rows cover all seeded transactions, with Transactions 20 and 201 both processed by Staff 1, and the 401–403 batch of staff handling Transactions 701–705.
+
+**`vinylcatalogue_refers.sql`**
+Defines the self-referential `REFERS` table, where both columns (`Referrer_ID` and `Referred_ID`) are foreign keys pointing back to the `CUSTOMER` table. The composite `(Referrer_ID, Referred_ID)` primary key prevents duplicate referral records. The 11 seeded rows form a chain: Customer 10 referred Customer 1, Customer 1 referred Customer 2, Customer 2 referred Customer 3, and so on up to Customer 9 referring Customer 10, completing a referral cycle among the first 10 customers. Customer 501 also referred Customer 502.
+
+### 4.4 Automation File
+
+**`vinylcatalogue_pro_trig_fun.sql`**
+This is the only file that does not use the `mysqldump` format — it is a hand-written SQL script containing all database automation objects. It defines five `DELIMITER //` ... `DELIMITER ;` blocks for triggers, three stored procedures, and two functions. These must be imported last, after all tables exist, since triggers and procedures reference those tables. See [Section 6](#6-database-automation--triggers-procedures--functions) for the full breakdown of each object.
+
+---
+
+## 5. Database Design Summary
 
 The database is named **`vinylcatalogue`** and uses MySQL InnoDB with `utf8mb4` charset. All tables use integer primary keys. Foreign key constraints enforce referential integrity throughout.
 
-### 4.1 Entity Tables
+### 5.1 Entity Tables
 
 #### `RECORD`
 The central entity of the system. Tracks every vinyl record stocked by the store.
@@ -194,7 +273,7 @@ Represents a customer's intent to hold a record.
 
 ---
 
-### 4.2 Relationship / Junction Tables
+### 5.2 Relationship / Junction Tables
 
 These tables encode many-to-many relationships between entity tables.
 
@@ -209,7 +288,7 @@ These tables encode many-to-many relationships between entity tables.
 
 ---
 
-### 4.3 Multi-Valued Attribute Tables
+### 5.3 Multi-Valued Attribute Tables
 
 Phone/contact numbers are modelled as separate tables (1NF compliance — each entity can have multiple contact numbers).
 
@@ -221,11 +300,11 @@ Phone/contact numbers are modelled as separate tables (1NF compliance — each e
 
 ---
 
-## 5. Database Automation — Triggers, Procedures & Functions
+## 6. Database Automation — Triggers, Procedures & Functions
 
 All automation objects are defined in **`vinylcatalogue_pro_trig_fun.sql`**.
 
-### 5.1 Triggers
+### 6.1 Triggers
 
 | # | Name | Event | Table | What it does |
 |---|---|---|---|---|
@@ -237,7 +316,7 @@ All automation objects are defined in **`vinylcatalogue_pro_trig_fun.sql`**.
 
 > **Note:** Trigger 1 (`after_purchase_insert`) and the application-level inventory update in `server.js` both modify `Available_Copies`. When using the web application, the server performs an explicit `UPDATE RECORD SET Available_Copies = ?` after the transaction, which means the trigger fires on the BUYS insert as well. This is a known design overlap in the current implementation.
 
-### 5.2 Stored Procedures
+### 6.2 Stored Procedures
 
 | Procedure | Parameters | Description |
 |---|---|---|
@@ -245,7 +324,7 @@ All automation objects are defined in **`vinylcatalogue_pro_trig_fun.sql`**.
 | `GetCustomerPurchaseHistory` | `p_customer_id` | Returns all transactions for a customer: Transaction_ID, date, Record_Title, Genre, Quantity, Unit_Price, Total_Amount, ordered by date DESC. |
 | `RestockRecord` | `p_record_id`, `p_additional_copies` | Increments both `Total_Copies` and `Available_Copies` by the given amount and returns a confirmation message. |
 
-### 5.3 Functions
+### 6.3 Functions
 
 | Function | Parameter | Returns | Description |
 |---|---|---|---|
@@ -254,7 +333,7 @@ All automation objects are defined in **`vinylcatalogue_pro_trig_fun.sql`**.
 
 ---
 
-## 6. Sample Data
+## 7. Sample Data
 
 Each SQL dump includes seed rows. The key seed data across tables:
 
@@ -269,7 +348,7 @@ Each SQL dump includes seed rows. The key seed data across tables:
 
 ---
 
-## 7. Backend — Node.js / Express Server
+## 8. Backend — Node.js / Express Server
 
 **Entry point:** `vinyl-catalogue-app/server.js`
 
@@ -279,7 +358,7 @@ The server:
 - Exposes a JSON REST API under `/api/`
 - Uses database transactions (`db.beginTransaction` / `db.commit` / `db.rollback`) for all multi-step write operations to ensure atomicity
 
-### 7.1 Environment Configuration
+### 8.1 Environment Configuration
 
 Create `vinyl-catalogue-app/.env` with:
 
@@ -291,7 +370,7 @@ DB_NAME=vinylcatalogue
 SERVER_PORT=3000
 ```
 
-### 7.2 REST API Endpoints
+### 8.2 REST API Endpoints
 
 #### Records — `/api/records`
 
@@ -361,45 +440,191 @@ SERVER_PORT=3000
 
 ---
 
-## 8. Frontend — Single-Page Application
+## 9. Frontend — Single-Page Application
 
-The frontend is a single HTML file (`public/index.html`) with a dark Spotify-inspired theme (background `#121212`, containers `#1E1E1E`, accent colour `#667eea` / `#764ba2`). Tab switching is handled purely in JavaScript with no page reloads.
+The entire UI lives in a single HTML file (`public/index.html`). All tab content divs exist in the DOM simultaneously; `main.js` simply toggles which one is visible. Data is fetched live from the API on every tab switch, so the page always reflects the current database state without needing a reload.
 
-### 8.1 Page Layout & Tabs
+### 9.1 Visual Design & CSS
 
-The page header contains the store title. Below it is a tab navigation bar with eight tabs. Only one tab content div is visible at a time (`display: block` vs `display: none`).
+The app has two CSS sources that work together. The inline `<style>` block inside `index.html` defines the core layout (header, tab nav bar, content panels, form grids, tables, and button colours). The external `public/css/style.css` extends and overrides some of those styles with more refined rules.
 
-| Tab | What it shows |
-|---|---|
-| **Dashboard** | 4 stat cards (total records, total customers, active reservations, today's sales) + a recent transactions table fetched from `/api/stats` |
-| **Records** | Search bar (by title/genre), add-record form (title, artist dropdown, genre, edition, catalog number, total copies, available copies), full records table with delete button |
-| **Artists** | Search bar (by name), add-artist form (name, nationality, type), artists table with delete button |
-| **Customers** | Search bar (by name/email) + membership type filter dropdown, add-customer form (full name, email, membership, phone, address), customers table |
-| **Transactions** | Sell/return form (customer dropdown, record dropdown, staff dropdown, quantity, unit price, transaction type), recent transactions table |
-| **Reservations** | Add-reservation form (customer dropdown, record dropdown), reservations table with status-update and delete buttons |
-| **Labels** | Add-label form (name, address), labels table with delete button |
-| **Staff** | Add-staff form (name, role, salary, contact number), staff table |
+**Colour palette:**
+- Page background: `#121212` (near-black, matching Spotify's dark theme)
+- Header and container backgrounds: `#1E1E1E` / `#1a1a1a` / `#1b1b1b` (slightly lighter dark)
+- Input backgrounds: `#2a2a2a` (dark charcoal)
+- Active tab accent (inline styles): `#667eea` (soft blue-purple)
+- Active tab accent (style.css): `#FF2D55` (Apple-style red-pink), with a left border indicator
+- Hover accent: `#764ba2` (purple, inline) / `#ff476d` (lighter pink, style.css)
+- Delete button: `#f44336` / `#d9534f` red variants
+- Default text: `#E0E0E0` / `#f1f1f1`
+- Label text: `#B3B3B3` / `#ccc` (muted gray)
 
-### 8.2 JavaScript Modules
+**Layout:**
+The page uses a top header bar followed by a horizontal tab navigation bar (defined in `index.html`). The `style.css` file provides an alternative sidebar-style layout (`nav` element, 220px wide, left-pinned) with smooth `opacity + translateY` entrance animations on `.tab-content.active`. It also adds `scroll-snap-type: y proximity` on the main content area for smooth scrolling between sections, with each `.page-section` set to `min-height: 100vh`.
 
-All scripts are loaded at the bottom of `index.html`. `config.js` is loaded first, establishing `API_URL = 'http://localhost:3000/api'`, which all other modules reference.
+**Tables:**
+All data tables share a consistent style: `border-collapse: collapse`, dark `#2a2a2a` headers with white text, alternating `#181818` even rows, and a subtle `rgba(255,255,255,0.05)` hover highlight. Borders are `#404040` (dark gray).
 
-| File | Responsibility |
-|---|---|
-| `config.js` | Exports `API_URL` used by all other modules |
-| `main.js` | Implements `showTab(tabName, btn)` for tab switching; calls all `load*()` functions on page load to populate dropdowns and tables |
-| `dashboard.js` | `loadDashboard()` — fetches `/api/stats` and renders stat cards and a recent-transactions HTML table |
-| `records.js` | `loadRecords()`, `searchRecords()`, `deleteRecord(id)` — handles the records form submit, renders a sortable HTML table |
-| `artists.js` | `loadArtists()`, `searchArtists()`, `deleteArtist(id)` — similar pattern; also populates the Artist dropdown in the Records tab |
-| `customers.js` | `loadCustomers()`, `searchCustomers()` — handles name/email text search and membership-type filter; populates Customer dropdowns in Transactions and Reservations |
-| `staff.js` | `loadStaff()` — handles form submit; populates Staff dropdown in Transactions |
-| `transactions.js` | `loadTransactions()` — handles the transaction form (sale/return) and renders the transaction list; populates Record dropdown |
-| `reservations.js` | `loadReservations()`, `addReservation()`, `updateReservationStatus(id, status)`, `deleteReservation(id)` |
-| `labels.js` | `loadLabels()`, `deleteLabel(id)` |
+**Badges:**
+`style.css` defines `.badge` classes for reservation status display: `.badge.active` (green `#28a745`), `.badge.completed` (gray `#666`), and `.badge.cancelled` (red `#c0392b`).
+
+**Forms:**
+All forms are wrapped in a dark `#1a1a1a` card with a `border-radius: 10px` and use a `form-grid` CSS Grid layout (`repeat(auto-fit, minmax(250px, 1fr))`) so fields automatically wrap across multiple columns on wider screens.
 
 ---
 
-## 9. Setup & Running the Application
+### 9.2 Tab Navigation & Initialisation
+
+**`main.js`** owns the tab-switching logic. The `showTab(tabName, clickedButton)` function:
+1. Removes the `active` class from all `.tab-content` divs and all `.tab-button` elements
+2. Adds `active` to the target div and to the clicked button
+3. Calls the corresponding `load*()` function for that tab (e.g. `loadRecords()`, `loadArtists()`)
+
+On `DOMContentLoaded`, `main.js` reads the `onclick` attribute of whichever tab button already has the `active` class in the HTML (which is the Dashboard button) and calls `loadDashboardStats()` to populate the page immediately on first load.
+
+---
+
+### 9.3 Dashboard Tab
+
+**Script:** `dashboard.js` — `loadDashboardStats()`
+
+When the Dashboard tab is active, `loadDashboardStats()` fires a single GET request to `/api/stats`. The server responds with an object containing `totalRecords`, `totalCustomers`, `activeReservations`, `todaySales`, and `recentTransactions`. The function:
+- Writes the four stat values into the four `.stat-card` `<h3>` elements: **Total Records**, **Total Customers**, **Active Reservations**, and **Today's Sales** (formatted with a dollar sign and two decimal places)
+- Calls `displayRecentTransactions(stats.recentTransactions)` which builds an HTML `<table>` with columns **ID**, **Date**, **Customer**, **Record**, **Type**, and **Total ($)**, inserting it into the `#recentTransactions` div
+
+The stat cards use a purple-to-grape gradient background (`linear-gradient(135deg, #667eea, #764ba2)`) making them visually distinctive against the dark background. If no transactions exist yet, the table area shows "No transactions yet today."
+
+---
+
+### 9.4 Records Tab
+
+**Script:** `records.js`
+
+The Records tab has three interactive areas:
+
+**Search bar:** A text input (`#searchRecord`) and two buttons — "Search" (calls `searchRecords()`) and "Clear" (calls `loadRecords()` to reset). `searchRecords()` fetches all records, then filters client-side by matching the search term against the Title, Genre, artist name list, or Catalog_Number fields (case-insensitive). Note: it calls `/api/records-with-artists` for search, while the initial load uses `/api/records`.
+
+**Add Record form:** Eight fields arranged in the CSS grid:
+- Title (text, required)
+- Artist (dropdown, populated by fetching `/api/artists`; optional — selecting one will call `POST /api/records/:id/artists/:artistId` after the record is created to insert a PRODUCED_BY row)
+- Genre (dropdown with 10 options: Rock, Jazz, Classical, Pop, Blues, Electronic, Hip-Hop, Country, Folk, Metal; required)
+- Edition (text, placeholder "e.g., First Press, Remaster")
+- Catalog Number (text)
+- Total Copies (number, min 0, required)
+- Available Copies (number, min 0, required)
+- Submit button "Add Record"
+
+On submit, the form POSTs to `/api/records`, then optionally POSTs the artist link, shows a success alert, resets the form, and refreshes the table.
+
+**Records table:** Columns are **ID**, **Title**, **Genre**, **Edition**, **Catalog #**, **Total**, **Available**, and **Actions**. The Actions column contains a red "Delete" button that calls `deleteRecord(id, title)`. This function shows a confirmation dialog warning that all related reservations and purchases will also be removed, then calls `DELETE /api/records/:id` which cascades through PRODUCED_BY, DISTRIBUTED_BY, BUYS, and RESERVES before deleting the record itself.
+
+---
+
+### 9.5 Artists Tab
+
+**Script:** `artists.js`
+
+The Artists tab follows the same three-area layout as Records.
+
+**Search bar:** Filters the artist list client-side by name (case-insensitive substring match). The "Clear" button reloads all artists.
+
+**Add Artist form:** Three fields — Artist Name (text, required), Nationality (text), and Type (dropdown: Solo Artist, Band, Orchestra, DJ, Duo; required). On submit it POSTs to `/api/artists`, shows an alert, resets, and refreshes the table.
+
+**Artists table:** Columns are **ID**, **Name**, **Nationality**, **Type**, and **Actions** (Delete button). The delete action calls `deleteArtist(id, name)`, which asks for confirmation and then calls `DELETE /api/artists/:id`. The server first checks whether any PRODUCED_BY rows reference that artist — if they do, it returns HTTP 400 with "Cannot delete artist with existing records" and the frontend shows that error in an alert rather than deleting. This prevents orphaned records with no artist link.
+
+---
+
+### 9.6 Customers Tab
+
+**Script:** `customers.js`
+
+The Customers tab has the most complex search UI of all tabs.
+
+**Search + filter bar:** A text input (`#searchCustomer`) for name or email substring search, plus a dropdown (`#filterMembership`) with options All Memberships, Regular, Premium, and VIP. Both can be combined: `searchCustomers()` fetches all customers, then filters client-side checking that the full name or email contains the search term AND that the membership type matches the dropdown (if a filter is selected). The "Clear" button reloads all customers unfiltered.
+
+**Add Customer form:** Nine fields — First Name (required), Middle Name (optional), Last Name (required), Email (required; the database trigger validates format), Membership Type (dropdown: Regular, Premium, VIP), Phone (tel input, optional), Street, City, and Pincode. The `addCustomer()` function requires at minimum first name, last name, and email before submitting. On the server side this POSTs to `/api/customers` which opens a MySQL transaction: it inserts the CUSTOMER row first, then (if a phone was provided) inserts a CUSTOMER_PHONE row and commits; any failure rolls back both.
+
+**Customers table:** Columns are **ID**, **Name** (full name assembled from first + middle + last), **Email**, **Membership**, **City**, and **Join Date** (formatted with `toLocaleDateString()`). There are no delete or edit buttons for customers in the current implementation.
+
+---
+
+### 9.7 Transactions Tab
+
+**Script:** `transactions.js`
+
+The Transactions tab handles both Sales and Returns via a single form, and displays a history table below it.
+
+**Dropdowns loading:** When the tab opens, `loadTransactionDropdowns()` fires three parallel API calls to populate:
+- Customer dropdown (`#transCustomer`) — shows "First Last" for each customer
+- Record dropdown (`#transRecord`) — shows `"Title (N available)"` so the user can see live availability before selecting
+- Staff dropdown (`#transStaff`) — shows each staff member's name
+
+**Transaction form:** Six fields — Customer (dropdown), Record (dropdown with availability shown), Staff Processing (dropdown), Quantity (number, min 1, default 1), Unit Price in USD (number, step 0.01), and Transaction Type (dropdown: Sale, Return). On submit the form POSTs to `/api/transactions`. The server validates that there are enough available copies for a Sale; if not, it returns HTTP 400 with the message "Only N copies available". On success, an alert shows the confirmation message and calculated total (`$XX.XX`), the form resets, and both the transaction list and dashboard stats are refreshed.
+
+After a successful transaction, `transactions.js` also checks whether the same customer has an open reservation for that record and calls `updateReservation(id, 'Completed')` on it automatically, keeping reservation status in sync with the frontend.
+
+**Transactions table:** Displays the 50 most recent transactions with columns **ID**, **Date**, **Customer**, **Record**, **Type**, **Quantity**, **Unit Price**, **Total**, and **Staff**.
+
+---
+
+### 9.8 Reservations Tab
+
+**Script:** `reservations.js`
+
+The Reservations tab manages record holds placed by customers.
+
+**Dropdowns:** On tab open, `loadReservationDropdowns()` fetches all customers and all records, populating the `#resCustomer` and `#resRecord` dropdowns. The record dropdown shows `"Title (N available)"` just like in the Transactions tab.
+
+**Add Reservation form:** Two required dropdowns — Customer and Record — and a submit button "Add Reservation". The form handler POSTs to `/api/reservations` which opens a transaction: it inserts a RESERVATION row with `Status = 'Active'` and today's date, then inserts a RESERVES row linking customer, record, and reservation. If the database trigger (`before_reservation_insert`) detects zero available copies it raises an error, which the API returns as HTTP 500 with the trigger's message, displayed in an alert.
+
+**Reservations table:** Columns are **ID**, **Customer**, **Record**, **Date**, **Status**, and **Actions**. The Actions column has two buttons:
+- **"Mark Completed"** — calls `updateReservation(id, 'Completed')` which sends `PUT /api/reservations/:id` with `{ status: 'Completed' }` and refreshes the list
+- **"Delete"** (red button) — calls `deleteReservation(id)` after a confirmation dialog; sends `DELETE /api/reservations/:id` which removes the RESERVES link then the RESERVATION row inside a transaction
+
+---
+
+### 9.9 Labels Tab
+
+**Script:** `labels.js`
+
+The Labels tab is the simplest management screen.
+
+**Add Label form:** Two fields — Label Name (text, required) and Address (text, optional) — and a submit button "Add Label". POSTs to `/api/labels`, shows the success message from the server, resets, and refreshes the table.
+
+**Labels table:** Columns are **ID**, **Name**, **Address**, and **Actions** (Delete button). `deleteLabel(id)` asks for confirmation then calls `DELETE /api/labels/:id`. Note: there is no guard against deleting a label that has DISTRIBUTED_BY or LABEL_CONTACT rows — this can cause a MySQL foreign key error if those rows exist; the error is surfaced to the user as an alert.
+
+---
+
+### 9.10 Staff Tab
+
+**Script:** `staff.js`
+
+The Staff tab manages employee records.
+
+**Add Staff form:** Four fields — Name (text, required), Role (dropdown: Manager, Sales Associate, Cashier, Inventory Manager; required), Salary (number, step 0.01, required), and Contact Number (tel, optional). POSTs to `/api/staff` which optionally inserts a STAFF_CONTACT row in the same transaction.
+
+**Staff table:** Columns are **ID**, **Name**, **Role**, and **Salary** (prefixed with `$`). There are no delete or edit buttons — staff records are read-only in the current UI. Staff members do appear as a dropdown in the Transactions tab for linking transactions.
+
+---
+
+### 9.11 JavaScript Module Reference
+
+| File | Size | Key functions |
+|---|---|---|
+| `config.js` | 1 line | Declares `const API_URL = 'http://localhost:3000/api'` used by all other scripts |
+| `main.js` | ~70 lines | `showTab(tabName, btn)` — tab switching; `DOMContentLoaded` initialiser |
+| `dashboard.js` | ~65 lines | `loadDashboardStats()`, `displayRecentTransactions(list)` |
+| `records.js` | ~185 lines | `loadRecords()`, `loadArtistsDropdown()`, `searchRecords()`, `deleteRecord(id, title)`, form submit handler |
+| `artists.js` | ~135 lines | `loadArtists()`, `displayArtists(list)`, `searchArtists()`, `deleteArtist(id, name)`, form submit handler |
+| `customers.js` | ~245 lines | `loadCustomers()`, `displayCustomers(list)`, `addCustomer(event)`, `searchCustomers()`, `DOMContentLoaded` handler |
+| `staff.js` | ~80 lines | `loadStaff()`, form submit handler |
+| `transactions.js` | ~145 lines | `loadTransactions()`, `loadTransactionDropdowns()`, form submit handler (also auto-completes reservations) |
+| `reservations.js` | ~165 lines | `loadReservationDropdowns()`, `loadReservations()`, `updateReservation(id, status)`, `deleteReservation(id)`, form submit + `DOMContentLoaded` handler |
+| `labels.js` | ~100 lines | `loadLabels()`, `deleteLabel(id)`, form submit handler, `DOMContentLoaded` handler |
+
+---
+
+## 10. Setup & Running the Application
 
 ### Prerequisites
 - MySQL 8.0+
@@ -474,7 +699,7 @@ Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 10. Key Design Decisions & Business Rules
+## 11. Key Design Decisions & Business Rules
 
 1. **Referential integrity is enforced entirely in the database.** Every junction table carries foreign key constraints. Cascade behaviour is not used; the application-layer delete endpoints manually remove child rows before deleting a parent.
 
